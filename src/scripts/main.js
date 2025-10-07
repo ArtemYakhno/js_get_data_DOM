@@ -1,25 +1,35 @@
-/* eslint-disable no-console */
 'use strict';
 
 const totalPopulation = document.querySelector('.total-population');
 const averagePopulation = document.querySelector('.average-population');
-const populations = [...document.querySelectorAll('.population')].map(
-  (el) => el.textContent,
-);
 
-console.log(populations);
+const populations = [...document.querySelectorAll('.population')].map((el) => {
+  return el.textContent.trim();
+});
 
-const sum = populations.reduce((acc, el) => {
-  const num = Number(el.replaceAll(',', ''));
+const numericValues = populations
+  .map((el) => {
+    const sanitized = el.replace(/[^0-9.-]/g, '');
+    const num = Number(sanitized);
 
-  if (!isNaN(num)) {
-    return acc + num;
-  }
+    return !isNaN(num) ? num : null;
+  })
+  .filter((num) => num !== null);
 
-  return acc;
-}, 0);
+if (numericValues.length === 0) {
+  totalPopulation.textContent = 'No valid data';
+  averagePopulation.textContent = 'No valid data';
+  throw new Error('No valid numeric population data found.');
+}
 
-const average = Math.floor(sum / populations.length);
+const sum = numericValues.reduce((acc, n) => acc + n, 0);
+const average = sum / numericValues.length;
 
-totalPopulation.textContent = sum.toLocaleString('en-US');
-averagePopulation.textContent = average.toLocaleString('en-US');
+const sample = populations.find((el) => /[0-9]/.test(el));
+const usesComma = sample.includes(',');
+const separatorLocale = usesComma ? 'en-US' : 'de-DE';
+
+totalPopulation.textContent = sum.toLocaleString(separatorLocale);
+
+averagePopulation.textContent =
+  Math.round(average).toLocaleString(separatorLocale);
