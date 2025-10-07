@@ -16,20 +16,22 @@ const numericValues = populations
   })
   .filter((num) => num !== null);
 
-if (numericValues.length === 0) {
+try {
+  if (numericValues.length === 0) {
+    throw new Error('No valid numeric population data found.');
+  }
+} catch (err) {
   totalPopulation.textContent = 'No valid data';
   averagePopulation.textContent = 'No valid data';
-  throw new Error('No valid numeric population data found.');
 }
 
 const sum = numericValues.reduce((acc, n) => acc + n, 0);
 const average = sum / numericValues.length;
 
-const sample = populations.find((el) => /[0-9]/.test(el));
-const usesComma = sample.includes(',');
-const separatorLocale = usesComma ? 'en-US' : 'de-DE';
+function formatNumber(num) {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
 
-totalPopulation.textContent = sum.toLocaleString(separatorLocale);
+totalPopulation.textContent = formatNumber(Math.round(sum));
 
-averagePopulation.textContent =
-  Math.round(average).toLocaleString(separatorLocale);
+averagePopulation.textContent = formatNumber(Math.round(average));
